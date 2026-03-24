@@ -2,9 +2,9 @@ import './globals.css';
 import type { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'Zipora Downloads – Fast App, Software and File Downloads',
+  title: 'Zipora Downloads – Cracked Apps, Software and File Downloads',
   description:
-    'Discover and download APKs, EXEs, ZIPs, PDFs and more with a clean interface and organised categories.',
+    'Discover and download Cracked APKs, EXEs, ZIPs, PDFs and more with a clean interface and organised categories.',
   other: {
     monetag: 'cd76fadb010bf0bacf74e000aec660b7',
   },
