@@ -1,8 +1,15 @@
+// app/admin/page.tsx
 "use client";
 import { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import NavBar from '../../components/NavBar';
 import { slugify, formatFileSize } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
+
+/**
+ * Maximum file size (bytes) allowed for Supabase free tier. Files over
+ * this size will be uploaded to an external service instead.
+ */
+const MAX_SUPABASE_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
 
 interface FormData {
   title: string;
@@ -24,8 +31,9 @@ export default function AdminPage() {
   const [slug, setSlug] = useState('');
   const [fileSize, setFileSize] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  // Update SEO title and slug whenever title or format changes.
+  // Generate SEO title and slug based on form fields
   useEffect(() => {
     if (form.title) {
       const base = `${form.title} ${form.format} Download`;
@@ -60,88 +68,95 @@ export default function AdminPage() {
   };
 
   /**
-   * Handle form submission for uploading a file. This will upload both
-   * the binary file and its thumbnail image to Supabase storage, then
-   * create a corresponding record in the `files` table. Errors are
-   * surfaced via alerts, while a successful upload resets the form
-   * state and informs the user.
+   * Upload a file to an external service (e.g. file.io) when it exceeds
+   * the Supabase free tier limit. Returns the URL of the uploaded file.
    */
+  const uploadFileExternally = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('https://file.io', { method: 'POST', body: formData });
+    if (!res.ok) {
+      throw new Error('External upload failed');
+    }
+    const json = await res.json();
+    if (!json.link) {
+      throw new Error('External upload did not return a link');
+    }
+    return json.link;
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Ensure a file and image have been selected
     if (!form.file || !form.image) {
       alert('Please select both a file and a thumbnail image before uploading.');
       return;
     }
 
+    setUploading(true);
     try {
-      // Upload the binary file to the "files" bucket
-      const safeName = form.file.name.replace(/\s+/g, '-');
-const filePath = `files/${Date.now()}-${safeName}`;
+      // Decide whether to upload via Supabase or external service
+      const isLargeFile = form.file.size > MAX_SUPABASE_FILE_SIZE_BYTES;
+      let fileUrl = '';
+      if (isLargeFile) {
+        alert('File is large; uploading via external service. It may take longer.');
+        fileUrl = await uploadFileExternally(form.file);
+      } else {
+        // Upload file to Supabase storage
+        const safeName = form.file.name.replace(/\s+/g, '-');
+        const filePath = `files/${Date.now()}-${safeName}`;
+        const fileType = form.format === 'APK'
+          ? 'application/vnd.android.package-archive'
+          : form.file.type || 'application/octet-stream';
+        const { error: fileError } = await supabase.storage
+          .from('files')
+          .upload(filePath, form.file, {
+            contentType: fileType,
+            cacheControl: '3600',
+          });
+        if (fileError) throw fileError;
+        const fileUrlResponse = supabase.storage.from('files').getPublicUrl(filePath);
+        fileUrl = fileUrlResponse.data.publicUrl;
+      }
 
-// detect file type automatically
-const fileType =
-  form.format === 'APK'
-    ? 'application/vnd.android.package-archive'
-    : form.file.type || 'application/octet-stream';
-
-const { error: fileError } = await supabase.storage
-  .from('files')
-  .upload(filePath, form.file, {
-  contentType: fileType,
-  cacheControl: '3600'
-});
-      if (fileError) throw fileError;
-
-      const fileUrlResponse = supabase.storage
-        .from('files')
-        .getPublicUrl(filePath);
-      const fileUrl = fileUrlResponse.data.publicUrl;
-
-      // Upload the thumbnail image to the "images" bucket
+      // Upload thumbnail image to Supabase images bucket
       const safeImageName = form.image.name.replace(/\s+/g, '-');
-const imagePath = `images/${Date.now()}-${safeImageName}`;
-
-const { error: imageError } = await supabase.storage
-  .from('images')
-  .upload(filePath, form.file, {
-  contentType: fileType,
-  cacheControl: '3600'
-});
-      if (imageError) throw imageError;
-
-      const imageUrlResponse = supabase.storage
+      const imagePath = `images/${Date.now()}-${safeImageName}`;
+      const { error: imageErr } = await supabase.storage
         .from('images')
-        .getPublicUrl(imagePath);
+        .upload(imagePath, form.image, {
+          contentType: form.image.type,
+          cacheControl: '3600',
+        });
+      if (imageErr) throw imageErr;
+      const imageUrlResponse = supabase.storage.from('images').getPublicUrl(imagePath);
       const imageUrl = imageUrlResponse.data.publicUrl;
 
-      // Insert a new record into the files table
-      const { error: dbError } = await supabase.from('files').insert([
-        {
-          title: form.title,
-          seo_title: seoTitle,
-          slug: slug,
-          description: form.description,
-          category: form.category,
-          format: form.format,
-          file_url: fileUrl,
-          image_url: imageUrl,
-          file_size: fileSize,
-        },
-      ]);
-      if (dbError) throw dbError;
+      // Insert record in database
+      const { error: dbErr } = await supabase.from('files').insert([{
+        title: form.title,
+        seo_title: seoTitle,
+        slug,
+        description: form.description,
+        category: form.category,
+        format: form.format,
+        file_url: fileUrl,
+        image_url: imageUrl,
+        file_size: fileSize,
+      }]);
+      if (dbErr) throw dbErr;
 
-      // Reset the form after successful upload
+      // Reset form on success
       setForm({ title: '', category: 'Apps', format: 'APK', description: '' });
       setSeoTitle('');
       setSlug('');
       setFileSize('');
       setPreviewImage(null);
-
       alert('Upload successful! Your file is now available for download.');
     } catch (err: any) {
-  console.error('FULL ERROR:', err);
-  alert(`Failed: ${JSON.stringify(err, null, 2)}`);
+      console.error(err);
+      alert(`Upload failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -150,8 +165,12 @@ const { error: imageError } = await supabase.storage
       <NavBar />
       <section className="mx-auto max-w-4xl px-6 py-16">
         <h1 className="text-4xl font-black">Admin Upload Dashboard</h1>
-        <p className="mt-4 text-slate-400">Upload new files and automatically generate SEO titles and slugs.</p>
+        <p className="mt-4 text-slate-400">
+          Upload new files and automatically generate SEO titles and slugs. Files over 50 MB
+          will be stored off-site.
+        </p>
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          {/* Title input */}
           <div>
             <label className="block text-sm font-medium text-slate-300" htmlFor="title">
               App/File Name
@@ -165,8 +184,10 @@ const { error: imageError } = await supabase.storage
               className="mt-1 w-full rounded-lg border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500"
               placeholder="Example: CapCut Pro APK"
               required
+              disabled={uploading}
             />
           </div>
+          {/* Category, Format, and File Size */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <label className="block text-sm font-medium text-slate-300" htmlFor="category">
@@ -178,6 +199,7 @@ const { error: imageError } = await supabase.storage
                 value={form.category}
                 onChange={handleInputChange}
                 className="mt-1 w-full rounded-lg border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white focus:border-blue-500"
+                disabled={uploading}
               >
                 <option value="Apps">Apps</option>
                 <option value="Software">Software</option>
@@ -195,6 +217,7 @@ const { error: imageError } = await supabase.storage
                 value={form.format}
                 onChange={handleInputChange}
                 className="mt-1 w-full rounded-lg border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white focus:border-blue-500"
+                disabled={uploading}
               >
                 <option value="APK">APK</option>
                 <option value="EXE">EXE</option>
@@ -218,6 +241,7 @@ const { error: imageError } = await supabase.storage
               />
             </div>
           </div>
+          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-slate-300" htmlFor="description">
               Description
@@ -230,8 +254,10 @@ const { error: imageError } = await supabase.storage
               onChange={handleInputChange}
               className="mt-1 w-full rounded-lg border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500"
               placeholder="Enter a short description of the file"
+              disabled={uploading}
             />
           </div>
+          {/* File and Image Inputs */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-slate-300" htmlFor="file">
@@ -243,6 +269,7 @@ const { error: imageError } = await supabase.storage
                 type="file"
                 onChange={handleFileChange}
                 className="mt-1 w-full cursor-pointer rounded-lg border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white file:mr-4 file:rounded-lg file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700"
+                disabled={uploading}
               />
             </div>
             <div>
@@ -256,12 +283,18 @@ const { error: imageError } = await supabase.storage
                 accept="image/*"
                 onChange={handleFileChange}
                 className="mt-1 w-full cursor-pointer rounded-lg border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white file:mr-4 file:rounded-lg file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700"
+                disabled={uploading}
               />
               {previewImage && (
-                <img src={previewImage} alt="Preview" className="mt-4 h-40 w-auto rounded-lg border border-white/10 object-contain" />
+                <img
+                  src={previewImage}
+                  alt="Preview"
+                  className="mt-4 h-40 w-auto rounded-lg border border-white/10 object-contain"
+                />
               )}
             </div>
           </div>
+          {/* Generated SEO and Slug */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-slate-300" htmlFor="seoTitle">
@@ -290,14 +323,16 @@ const { error: imageError } = await supabase.storage
               />
             </div>
           </div>
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-blue-950/30 hover:opacity-95"
+            disabled={uploading}
+            className={`w-full rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-blue-950/30 ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-95'}`}
           >
-            Upload File
+            {uploading ? 'Uploading...' : 'Upload File'}
           </button>
         </form>
       </section>
     </main>
   );
-}
+          }
