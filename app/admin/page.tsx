@@ -88,8 +88,9 @@ const fileType =
 const { error: fileError } = await supabase.storage
   .from('files')
   .upload(filePath, form.file, {
-    contentType: fileType
-  });
+  contentType: fileType,
+  cacheControl: '3600'
+});
       if (fileError) throw fileError;
 
       const fileUrlResponse = supabase.storage
@@ -103,9 +104,10 @@ const imagePath = `images/${Date.now()}-${safeImageName}`;
 
 const { error: imageError } = await supabase.storage
   .from('images')
-  .upload(imagePath, form.image, {
-    contentType: form.image.type
-  });
+  .upload(filePath, form.file, {
+  contentType: fileType,
+  cacheControl: '3600'
+});
       if (imageError) throw imageError;
 
       const imageUrlResponse = supabase.storage
