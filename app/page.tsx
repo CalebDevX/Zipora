@@ -148,38 +148,6 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          {/* Right side: Featured file */}
-          {featuredFile && (
-            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-4 shadow-2xl shadow-black/25 backdrop-blur-xl">
-              <div className="overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/90">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={featuredFile.image}
-                  alt={featuredFile.title}
-                  className="h-64 w-full object-cover"
-                />
-                <div className="p-5">
-                  <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
-                    <span className="rounded-full bg-white/5 px-3 py-1">Featured</span>
-                    <span className="rounded-full bg-white/5 px-3 py-1">{featuredFile.format}</span>
-                    <span className="rounded-full bg-white/5 px-3 py-1">{featuredFile.size}</span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-white">{featuredFile.title}</h2>
-                  <p className="mt-3 text-sm leading-6 text-slate-400">
-                    {featuredFile.description}
-                  </p>
-                  <button
-                    onClick={() => handleDownload(featuredFile.fileUrl)}
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-3 text-sm font-semibold text-white hover:opacity-90"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download Featured File
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
       </section>
       {/* Category Cards */}
       <section className="mx-auto max-w-7xl px-6 pb-6">
