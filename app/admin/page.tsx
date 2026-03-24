@@ -124,8 +124,8 @@ export default function AdminPage() {
 
       alert('Upload successful! Your file is now available for download.');
     } catch (err: any) {
-      console.error(err);
-      alert(`Failed to upload: ${err.message || err}`);
+  console.error('FULL ERROR:', err);
+  alert(`Failed: ${JSON.stringify(err, null, 2)}`);
     }
   };
 
