@@ -76,10 +76,20 @@ export default function AdminPage() {
 
     try {
       // Upload the binary file to the "files" bucket
-      const filePath = `files/${Date.now()}-${form.file.name}`;
-      const { error: fileError } = await supabase.storage
-        .from('files')
-        .upload(filePath, form.file);
+      const safeName = form.file.name.replace(/\s+/g, '-');
+const filePath = `files/${Date.now()}-${safeName}`;
+
+// detect file type automatically
+const fileType =
+  form.format === 'APK'
+    ? 'application/vnd.android.package-archive'
+    : form.file.type || 'application/octet-stream';
+
+const { error: fileError } = await supabase.storage
+  .from('files')
+  .upload(filePath, form.file, {
+    contentType: fileType
+  });
       if (fileError) throw fileError;
 
       const fileUrlResponse = supabase.storage
@@ -88,10 +98,14 @@ export default function AdminPage() {
       const fileUrl = fileUrlResponse.data.publicUrl;
 
       // Upload the thumbnail image to the "images" bucket
-      const imagePath = `images/${Date.now()}-${form.image.name}`;
-      const { error: imageError } = await supabase.storage
-        .from('images')
-        .upload(imagePath, form.image);
+      const safeImageName = form.image.name.replace(/\s+/g, '-');
+const imagePath = `images/${Date.now()}-${safeImageName}`;
+
+const { error: imageError } = await supabase.storage
+  .from('images')
+  .upload(imagePath, form.image, {
+    contentType: form.image.type
+  });
       if (imageError) throw imageError;
 
       const imageUrlResponse = supabase.storage
