@@ -31,9 +31,7 @@ export default function NavBar() {
           <Link href="/#about" className="transition hover:text-white">
             About
           </Link>
-          <Link href="/admin" className="transition hover:text-white">
-            Admin
-          </Link>
+          
         </nav>
       </div>
     </header>
