@@ -2,22 +2,30 @@
 import { useState, useMemo, useEffect } from "react";
 import NavBar from "../components/NavBar";
 import FileCard from "../components/FileCard";
-import { Search, Music, Smartphone, FileArchive, FileText, Monitor, Sparkles } from "lucide-react";
+import {
+  Search,
+  Music,
+  Smartphone,
+  FileArchive,
+  FileText,
+  Monitor,
+  Sparkles,
+} from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 const formatOptions = ["All", "APK", "EXE", "MSI", "ZIP", "RAR", "PDF"];
 
 const categoryCards = [
-  { title: "Android Apps", subtitle: "APK files", icon: Smartphone },
+  { title: "Android Apps", subtitle: "APK", icon: Smartphone },
   { title: "Windows Software", subtitle: "EXE & MSI", icon: Monitor },
   { title: "Archives", subtitle: "ZIP & RAR", icon: FileArchive },
-  { title: "Documents", subtitle: "PDF files", icon: FileText }
+  { title: "Documents", subtitle: "PDF", icon: FileText },
 ];
 
 const monetagLinks = [
   "https://omg10.com/4/10753737",
   "https://omg10.com/4/10117202",
-  "https://omg10.com/4/10656039"
+  "https://omg10.com/4/10656039",
 ];
 
 export default function HomePage() {
@@ -48,15 +56,16 @@ export default function HomePage() {
         ...f,
         image: f.image_url,
         fileUrl: f.file_url,
-        size: f.file_size
+        size: f.file_size,
       }))
       .filter((file) => {
         const lowerQuery = query.toLowerCase();
+
         const matchesQuery =
-          file.title.toLowerCase().includes(lowerQuery) ||
-          file.description.toLowerCase().includes(lowerQuery) ||
-          file.category.toLowerCase().includes(lowerQuery) ||
-          file.format.toLowerCase().includes(lowerQuery);
+          file.title?.toLowerCase().includes(lowerQuery) ||
+          file.description?.toLowerCase().includes(lowerQuery) ||
+          file.category?.toLowerCase().includes(lowerQuery) ||
+          file.format?.toLowerCase().includes(lowerQuery);
 
         const matchesFormat =
           selectedFormat === "All" || file.format === selectedFormat;
@@ -77,54 +86,54 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-slate-950 text-white">
       <NavBar />
 
       {/* Hero */}
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-24">
+      <section className="mx-auto max-w-7xl px-4 pb-6 pt-6 sm:px-6 md:pb-10 md:pt-10">
         <div className="max-w-4xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-1 text-sm text-cyan-300">
-            <Sparkles className="h-4 w-4" />
-            Clean download experience
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-300">
+            <Sparkles className="h-3.5 w-3.5" />
+            Fast, clean downloads
           </div>
 
-          <h1 className="max-w-3xl text-4xl font-black leading-tight md:text-6xl">
-            Zipora Downloads – Fast App, Software and File Downloads
+          <h1 className="max-w-3xl text-2xl font-black leading-tight sm:text-3xl md:text-5xl">
+            Zipora Downloads
           </h1>
 
-          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-            Browse organised categories like APK, EXE, MSI, ZIP, RAR and PDF.
-            Each file page is clean, modern and SEO-friendly.
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 md:text-base">
+            Download APK, EXE, MSI, ZIP, RAR and PDF files in a cleaner,
+            faster and more organised way.
           </p>
 
-          <div className="mt-8 rounded-[28px] border border-white/10 bg-white/[0.04] p-4 shadow-2xl shadow-black/20 backdrop-blur-xl">
-            <div className="flex flex-col gap-3 md:flex-row">
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-3 shadow-xl shadow-black/10 backdrop-blur-xl">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search apps, software, PDF, ZIP, EXE..."
-                  className="h-14 w-full rounded-2xl border border-white/10 bg-slate-950/80 pl-11 pr-4 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
+                  placeholder="Search apps, PDFs, ZIPs..."
+                  className="h-11 w-full rounded-xl border border-white/10 bg-slate-950/80 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
                 />
               </div>
 
               <a
                 href="#downloads"
-                className="inline-flex h-14 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 px-6 text-sm font-semibold text-white shadow-lg shadow-blue-950/30"
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30"
               >
-                Browse Files
+                Browse
               </a>
             </div>
           </div>
 
-          {/* Format Filters */}
-          <div className="mt-8 flex flex-wrap gap-3">
+          {/* Filters */}
+          <div className="mt-4 flex flex-wrap gap-2">
             {formatOptions.map((option) => (
               <button
                 key={option}
                 onClick={() => setSelectedFormat(option)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   selectedFormat === option
                     ? "bg-blue-600 text-white"
                     : "border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]"
@@ -137,38 +146,47 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Category Cards */}
-      <section className="mx-auto max-w-7xl px-6 pb-4">
-        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      {/* Category Tiles */}
+      <section className="mx-auto max-w-7xl px-4 pb-4 sm:px-6">
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           {categoryCards.map(({ title, subtitle, icon: Icon }) => (
             <div
               key={title}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 shadow-lg shadow-black/5"
+              className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3"
             >
-              <div className="mb-2 inline-flex rounded-xl bg-blue-500/10 p-2 text-blue-300">
+              <div className="inline-flex rounded-lg bg-blue-500/10 p-2 text-blue-300">
                 <Icon className="h-4 w-4" />
               </div>
-              <h3 className="text-sm font-semibold text-white">{title}</h3>
-              <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
+
+              <div className="min-w-0">
+                <h3 className="truncate text-sm font-semibold text-white">
+                  {title}
+                </h3>
+                <p className="text-[11px] text-slate-400">{subtitle}</p>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
       {/* Download Library */}
-      <section id="downloads" className="mx-auto max-w-7xl px-6 py-16">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <section id="downloads" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12">
+        <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">
+            <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">
               Download Library
             </p>
-            <h2 className="mt-2 text-3xl font-bold text-white">
-              All Categories and File Formats
+            <h2 className="mt-1 text-2xl font-bold text-white md:text-3xl">
+              Browse Files
             </h2>
           </div>
+
+          <div className="text-sm text-slate-400">
+            {filteredFiles.length} file{filteredFiles.length !== 1 ? "s" : ""} found
+          </div>
         </div>
-    
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+        <div className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filteredFiles.map((file) => (
             <FileCard
               key={file.id}
@@ -179,26 +197,31 @@ export default function HomePage() {
         </div>
 
         {filteredFiles.length === 0 && (
-          <div className="rounded-[28px] border border-dashed border-white/10 bg-white/[0.03] p-10 text-center text-slate-400">
+          <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-8 text-center text-sm text-slate-400">
             No files matched your search or selected format.
           </div>
         )}
       </section>
+
       {/* FluxSave Promotion */}
       <section id="fluxsave" className="border-y border-white/10 bg-white/[0.03]">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-16 lg:grid-cols-[1fr_0.95fr] lg:items-center">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_0.95fr] lg:items-center">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-fuchsia-400/25 bg-fuchsia-500/10 px-4 py-1 text-sm text-fuchsia-300">
-              <Music className="h-4 w-4" />
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-fuchsia-400/25 bg-fuchsia-500/10 px-3 py-1 text-xs text-fuchsia-300">
+              <Music className="h-3.5 w-3.5" />
               Also powered by FluxSave
             </div>
-            <h2 className="text-3xl font-black leading-tight md:text-5xl">
-              Need music or social‑media downloads too?
+
+            <h2 className="text-2xl font-black leading-tight md:text-4xl">
+              Need music or social-media downloads too?
             </h2>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">
-              Zipora can introduce users to FluxSave, where they can download Spotify music and videos from platforms like YouTube, Instagram and TikTok—all in one place.
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
+              Zipora can introduce users to FluxSave, where they can download
+              Spotify music and videos from YouTube, Instagram, TikTok and more.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-300">
+
+            <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
               {[
                 "Spotify Music",
                 "YouTube Videos",
@@ -208,8 +231,8 @@ export default function HomePage() {
                 "X Clips",
                 "TikTok",
                 "Snapchat",
-                "Audiomack"
-              ].map(tag => (
+                "Audiomack",
+              ].map((tag) => (
                 <span
                   key={tag}
                   className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1"
@@ -218,29 +241,35 @@ export default function HomePage() {
                 </span>
               ))}
             </div>
+
             <a
               href="https://fluxsave.achek.com.ng"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-pink-600 to-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-950/30 hover:opacity-90"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-950/30 hover:opacity-90"
             >
               Explore FluxSave
             </a>
           </div>
-          <div className="hidden overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/80 p-6 shadow-xl shadow-black/20 lg:block">
+
+          <div className="hidden overflow-hidden rounded-2xl border border-white/10 bg-slate-900/80 p-5 shadow-xl shadow-black/20 lg:block">
             <div className="flex h-full items-center justify-center text-center text-slate-400">
               <p>FluxSave illustration placeholder</p>
             </div>
           </div>
         </div>
       </section>
+
       {/* About */}
-      <section id="about" className="mx-auto max-w-7xl px-6 py-16">
-        <h2 className="text-3xl font-bold text-white">About Zipora</h2>
-        <p className="mt-4 max-w-3xl text-base leading-7 text-slate-400">
-          Zipora is a modern download platform designed for students, creators and anyone who needs quick access to digital files. Built with performance, clarity and search visibility in mind, it offers clean file pages, rich metadata and a simple admin dashboard for adding new uploads. Files can be categorised into APK, EXE, MSI, ZIP, RAR and PDF to help users navigate and discover downloads more easily.
+      <section id="about" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-14">
+        <h2 className="text-2xl font-bold text-white md:text-3xl">About Zipora</h2>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400 md:text-base">
+          Zipora is a modern download platform designed for students, creators
+          and anyone who needs quick access to digital files. It focuses on
+          speed, clarity and clean file discovery across APK, EXE, MSI, ZIP,
+          RAR and PDF categories.
         </p>
       </section>
     </main>
   );
-      }
+                                     }
