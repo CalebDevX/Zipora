@@ -10,8 +10,7 @@ import { supabase } from '../../lib/supabase';
 // remove links here as needed.
 const monetagLinks = [
   'https://omg10.com/4/10753737',
-  'https://omg10.com/4/10117202',
-  'https://omg10.com/4/10656039',
+  'https://www.profitablecpmratenetwork.com/tge5ryehye?key=272a41cd288c483b556ef6c1808c7e6b',
 ];
 
 export default function DownloadsPage() {
