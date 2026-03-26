@@ -159,29 +159,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Category Tiles */}
-      <section className="mx-auto max-w-7xl px-4 pb-4 sm:px-6">
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-          {categoryCards.map(({ title, subtitle, icon: Icon }) => (
-            <div
-              key={title}
-              className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3"
-            >
-              <div className="inline-flex rounded-lg bg-blue-500/10 p-2 text-blue-300">
-                <Icon className="h-4 w-4" />
-              </div>
-
-              <div className="min-w-0">
-                <h3 className="truncate text-sm font-semibold text-white">
-                  {title}
-                </h3>
-                <p className="text-[11px] text-slate-400">{subtitle}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Featured App */}
 {featuredFile && (
   <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-6">
