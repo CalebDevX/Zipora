@@ -73,6 +73,20 @@ export default function HomePage() {
       });
   }, [files, query, selectedFormat]);
 
+  const featuredFile = useMemo(() => {
+  const featured = files.find((f) => f.is_featured);
+
+  const f = featured || files[0]; // fallback to latest
+  if (!f) return null;
+
+  return {
+    ...f,
+    image: f.image_url,
+    fileUrl: f.file_url,
+    size: f.file_size,
+  };
+}, [files]);
+  
   const handleDownload = (fileUrl: string) => {
     const randomIndex = Math.floor(Math.random() * monetagLinks.length);
     const monetagLink = monetagLinks[randomIndex];
@@ -167,6 +181,56 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Featured App */}
+{featuredFile && (
+  <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-6">
+    <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-blue-600/20 to-violet-600/20 p-4 backdrop-blur-xl md:p-6">
+
+      <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">
+        Featured App
+      </p>
+
+      <div className="flex items-center gap-4">
+
+        {/* Icon */}
+        <img
+          src={featuredFile.image}
+          alt={featuredFile.title}
+          className="h-16 w-16 rounded-xl object-cover md:h-20 md:w-20"
+        />
+
+        {/* Info */}
+        <div className="flex-1">
+          <h2 className="text-lg font-bold text-white md:text-xl">
+            {featuredFile.title}
+          </h2>
+
+          <p className="text-xs text-slate-300 md:text-sm">
+            {featuredFile.description}
+          </p>
+
+          <div className="mt-1 flex gap-2 text-[10px] text-slate-300">
+            <span className="rounded-full bg-white/10 px-2 py-1">
+              {featuredFile.format}
+            </span>
+            <span className="rounded-full bg-white/10 px-2 py-1">
+              {featuredFile.size}
+            </span>
+          </div>
+        </div>
+
+        {/* Button */}
+        <button
+          onClick={() => handleDownload(featuredFile.fileUrl)}
+          className="rounded-xl bg-white px-4 py-2 text-xs font-semibold text-black md:text-sm"
+        >
+          Download
+        </button>
+      </div>
+    </div>
+  </section>
+)}
 
       {/* Download Library */}
       <section id="downloads" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12">
