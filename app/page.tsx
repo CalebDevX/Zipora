@@ -23,9 +23,8 @@ const categoryCards = [
 ];
 
 const monetagLinks = [
-  "https://omg10.com/4/10753737",
+  "https://www.profitablecpmratenetwork.com/tge5ryehye?key=272a41cd288c483b556ef6c1808c7e6b",
   "https://omg10.com/4/10117202",
-  "https://omg10.com/4/10656039",
 ];
 
 export default function HomePage() {
