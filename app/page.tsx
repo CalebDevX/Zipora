@@ -159,52 +159,70 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured App */}
-{featuredFile && (
+{/* Featured Apps */}
+{files.length > 0 && (
   <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-6">
-    <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-blue-600/20 to-violet-600/20 p-4 backdrop-blur-xl md:p-6">
 
-      <p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">
-        Featured App
-      </p>
+    <div className="mb-3 flex items-center justify-between">
+      <h2 className="text-lg font-bold text-white md:text-2xl">
+        Featured Apps
+      </h2>
+    </div>
 
-      <div className="flex items-center gap-4">
+    {/* Scroll container */}
+    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
 
-        {/* Icon */}
-        <img
-          src={featuredFile.image}
-          alt={featuredFile.title}
-          className="h-16 w-16 rounded-xl object-cover md:h-20 md:w-20"
-        />
+      {files
+        .filter((f) => f.is_featured) // only featured
+        .map((file) => {
+          const item = {
+            ...file,
+            image: file.image_url,
+            fileUrl: file.file_url,
+            size: file.file_size,
+          };
 
-        {/* Info */}
-        <div className="flex-1">
-          <h2 className="text-lg font-bold text-white md:text-xl">
-            {featuredFile.title}
-          </h2>
+          return (
+            <div
+              key={item.id}
+              className="min-w-[240px] max-w-[240px] rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl"
+            >
+              {/* Image */}
+              <img
+                src={item.image}
+                alt={item.title}
+                className="h-32 w-full rounded-xl object-cover"
+              />
 
-          <p className="text-xs text-slate-300 md:text-sm">
-            {featuredFile.description}
-          </p>
+              {/* Info */}
+              <div className="mt-3">
+                <h3 className="line-clamp-1 text-sm font-semibold text-white">
+                  {item.title}
+                </h3>
 
-          <div className="mt-1 flex gap-2 text-[10px] text-slate-300">
-            <span className="rounded-full bg-white/10 px-2 py-1">
-              {featuredFile.format}
-            </span>
-            <span className="rounded-full bg-white/10 px-2 py-1">
-              {featuredFile.size}
-            </span>
-          </div>
-        </div>
+                <p className="mt-1 line-clamp-2 text-xs text-slate-400">
+                  {item.description}
+                </p>
 
-        {/* Button */}
-        <button
-          onClick={() => handleDownload(featuredFile.fileUrl)}
-          className="rounded-xl bg-white px-4 py-2 text-xs font-semibold text-black md:text-sm"
-        >
-          Download
-        </button>
-      </div>
+                <div className="mt-2 flex gap-2 text-[10px] text-slate-300">
+                  <span className="rounded-full bg-white/10 px-2 py-1">
+                    {item.format}
+                  </span>
+                  <span className="rounded-full bg-white/10 px-2 py-1">
+                    {item.size}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => handleDownload(item.fileUrl)}
+                  className="mt-3 w-full rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 py-2 text-xs font-semibold text-white"
+                >
+                  Download
+                </button>
+              </div>
+            </div>
+          );
+        })}
     </div>
   </section>
 )}
