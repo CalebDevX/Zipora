@@ -110,7 +110,7 @@ export default function HomePage() {
           </div>
 
           <h1 className="max-w-3xl text-2xl font-black leading-tight sm:text-3xl md:text-5xl">
-            Zipora Downloads
+            Achek - Zipora
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 md:text-base">
