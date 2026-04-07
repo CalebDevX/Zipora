@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import Script from 'next/script';
 
 export const metadata = {
-  title: 'Zipora Downloads – Apps, Software and File Downloads',
+  title: 'Achek Zipora - Apps, Software and File Downloads',
   description:
     'Discover and download APKs, EXEs, ZIPs, PDFs and more with a clean interface.',
   icons: {
