@@ -5,36 +5,27 @@ import FileCard from '../../components/FileCard';
 import { Search } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
-// Monetag links used to monetise downloads. A random one will be selected
-// for each download to distribute impressions across campaigns. Add or
-// remove links here as needed.
-const monetagLinks = [
-  'https://omg10.com/4/10753737',
-  'https://www.profitablecpmratenetwork.com/tge5ryehye?key=272a41cd288c483b556ef6c1808c7e6b',
-];
-
 export default function DownloadsPage() {
-  // Store all files fetched from Supabase
   const [files, setFiles] = useState<any[]>([]);
   const [query, setQuery] = useState('');
 
-  // Fetch files from the database on component mount
   useEffect(() => {
     const fetchFiles = async () => {
       const { data, error } = await supabase
         .from('files')
         .select('*')
         .order('created_at', { ascending: false });
+
       if (error) {
         console.error(error);
       } else {
         setFiles(data || []);
       }
     };
+
     fetchFiles();
   }, []);
 
-  // Filter files based on search query
   const filteredFiles = useMemo(() => {
     return files.filter((file) => {
       const q = query.toLowerCase();
@@ -47,21 +38,13 @@ export default function DownloadsPage() {
     });
   }, [files, query]);
 
-  // Download handler: choose a random Monetag link, open it in a new tab
-  // then start downloading the file in the current tab. This random
-  // selection helps distribute traffic across multiple campaigns.
   const handleDownload = (fileUrl: string) => {
-    const randomIndex = Math.floor(Math.random() * monetagLinks.length);
-    const monetagLink = monetagLinks[randomIndex];
-    window.open(monetagLink, '_blank');
-    setTimeout(() => {
-      const link = document.createElement('a');
-      link.href = fileUrl;
-      link.target = '_self';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }, 800);
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.target = '_self';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -72,6 +55,7 @@ export default function DownloadsPage() {
         <p className="mt-4 max-w-2xl text-slate-400">
           Browse all available files. Use the search bar below to filter by name, format, category or description.
         </p>
+
         <div className="mt-8 max-w-xl">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -83,7 +67,8 @@ export default function DownloadsPage() {
             />
           </div>
         </div>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredFiles.map((file) => (
             <FileCard
               key={file.id}
@@ -97,6 +82,7 @@ export default function DownloadsPage() {
             />
           ))}
         </div>
+
         {filteredFiles.length === 0 && (
           <div className="rounded-[28px] border border-dashed border-white/10 bg-white/[0.03] p-10 text-center text-slate-400">
             No files matched your search.
